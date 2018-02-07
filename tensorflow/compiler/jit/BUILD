@@ -33,6 +33,7 @@ cc_library(
     deps = [
         ":xla_cpu_device",
         ":xla_cpu_jit",
+        "//tensorflow/compiler/plugin",
     ] + if_cuda_is_configured([
         ":xla_gpu_device",
         ":xla_gpu_jit",
@@ -109,19 +110,6 @@ cc_library(
     alwayslink = True,
 )
 
-# Internal targets below this point.
-
-cc_library(
-    name = "common",
-    srcs = [
-        "defs.cc",
-    ],
-    hdrs = [
-        "defs.h",
-    ],
-    visibility = [":friends"],
-)
-
 cc_library(
     name = "xla_device",
     srcs = [
@@ -134,6 +122,8 @@ cc_library(
         "xla_device_context.h",
         "xla_device_ops.h",
     ],
+    # Public visibility is needed for external TF/XLA backends.
+    visibility = ["//visibility:public"],
     deps = [
         ":common",
         ":jit_compilation_passes",
@@ -153,7 +143,7 @@ cc_library(
         "//tensorflow/core:lib_internal",
         "//tensorflow/core:protos_all_cc",
         "//tensorflow/core:stream_executor_no_cuda",
-        "//tensorflow/core:tensorflow_opensource",
+        "//tensorflow/core/kernels:cast_op",
         "//tensorflow/core/kernels:constant_op",
         "//tensorflow/core/kernels:control_flow_ops",
         "//tensorflow/core/kernels:identity_op",
@@ -161,6 +151,19 @@ cc_library(
         "//tensorflow/core/kernels:sendrecv_ops",
         "//tensorflow/core/kernels:variable_ops",
     ],
+)
+
+# Internal targets below this point.
+
+cc_library(
+    name = "common",
+    srcs = [
+        "defs.cc",
+    ],
+    hdrs = [
+        "defs.h",
+    ],
+    visibility = [":friends"],
 )
 
 cc_library(
@@ -214,7 +217,6 @@ cc_library(
         ":common",
         ":compilation_passes",
         "//tensorflow/compiler/jit/kernels:xla_launch_op",
-        "//tensorflow/compiler/tf2xla:const_analysis",
         "//tensorflow/compiler/tf2xla:xla_compiler",
         "//tensorflow/core:core_cpu_internal",
         "//tensorflow/core:framework",
@@ -244,12 +246,13 @@ cc_library(
         "//tensorflow/compiler/jit/legacy_flags:mark_for_compilation_pass_flags",
         "//tensorflow/compiler/jit/ops:parallel_check_op",
         "//tensorflow/compiler/jit/ops:xla_ops",
-        "//tensorflow/compiler/tf2xla:const_analysis",
         "//tensorflow/compiler/tf2xla:dump_graph",
         "//tensorflow/compiler/tf2xla:xla_compiler",
+        "//tensorflow/compiler/xla:status_macros",
         "//tensorflow/core:core_cpu",
         "//tensorflow/core:core_cpu_internal",
         "//tensorflow/core:framework",
+        "//tensorflow/core:graph",
         "//tensorflow/core:lib",
         "//tensorflow/core:lib_internal",
         "//tensorflow/core:protos_all_cc",
